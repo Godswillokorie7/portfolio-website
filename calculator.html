@@ -3,356 +3,269 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Calculator</title>
+<title>Scientific Calculator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#000;
+overflow:hidden;
 }
 
-/* LIGHT MODE */
-.light-mode{
-  background:#e2e8f0;
-}
-
-/* CALCULATOR */
 .calculator{
-  background:#1e293b;
-  padding:20px;
-  border-radius:30px;
-  width:320px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.6);
-  transition:all 0.3s ease;
+width:100%;
+max-width:420px;
+height:100vh;
+background:#000;
+padding:20px;
+display:flex;
+flex-direction:column;
+justify-content:flex-end;
 }
 
-.light-mode .calculator{
-  background:white;
+.top-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+color:white;
 }
 
-/* DISPLAY */
-#display{
-  width:100%;
-  height:70px;
-  border:none;
-  outline:none;
-  border-radius:20px;
-  margin-bottom:10px;
-  font-size:2rem;
-  text-align:right;
-  padding-right:10px;
-  font-weight:bold;
-  background:#334155;
-  color:white;
-  box-sizing:border-box;
+.theme-btn{
+background:#1c1c1c;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:12px;
+font-size:14px;
+cursor:pointer;
 }
 
-.light-mode #display{
-  background:#cbd5e1;
-  color:black;
+.display{
+width:100%;
+height:140px;
+background:transparent;
+border:none;
+outline:none;
+color:white;
+font-size:55px;
+text-align:right;
+padding:20px 10px;
+overflow-x:auto;
 }
 
-/* BUTTONS */
 .buttons{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:12px;
 }
 
-/* BUTTON STYLE (iPhone-like) */
 button{
-  height:70px;
-  border:none;
-  border-radius:35px;
-  font-size:1.3rem;
-  cursor:pointer;
-  background:#3a3a3c;
-  color:white;
-  transition:0.15s;
-  box-shadow:0 3px 0 rgba(0,0,0,0.4);
+height:70px;
+border:none;
+border-radius:50%;
+font-size:24px;
+cursor:pointer;
+transition:0.15s;
+font-weight:500;
 }
 
 button:active{
-  transform:scale(0.95);
-  box-shadow:0 1px 0 rgba(0,0,0,0.2);
+transform:scale(0.92);
 }
 
-/* COLORS */
-.operator{background:#ff9f0a;}
-.equal{background:#34c759;}
-.clear{background:#ff453a;}
-#modeBtn{background:#007aff; width:100%; margin-bottom:10px;}
-
-/* SCIENTIFIC PANEL */
-.sci-panel{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-
-  max-height:0;
-  overflow:hidden;
-  opacity:0;
-  transform:translateY(-10px);
-  transition:all 0.3s ease;
+.gray{
+background:#a5a5a5;
+color:black;
 }
 
-.calculator.scientific .sci-panel{
-  max-height:300px;
-  opacity:1;
-  transform:translateY(0);
+.dark{
+background:#333333;
+color:white;
 }
 
-/* HISTORY */
-.history{
-  margin-top:15px;
-  width:320px;
-  color:white;
-  max-height:200px;
-  overflow-y:auto;
+.orange{
+background:#ff9f0a;
+color:white;
 }
 
-.history ul{
-  list-style:none;
-  padding:0;
+.zero{
+grid-column:span 2;
+border-radius:40px;
+text-align:left;
+padding-left:28px;
 }
 
-.history li{
-  background:#334155;
-  margin:5px 0;
-  padding:10px;
-  border-radius:8px;
+.scientific{
+background:#1f1f1f;
+color:#00ffcc;
+font-size:18px;
 }
 
-.clear-history{
-  width:100%;
-  margin-bottom:10px;
-  background:#ff453a;
+body.light{
+background:#f4f4f4;
 }
 
-/* RESPONSIVE */
-@media(max-width:400px){
-  .calculator{width:90%;}
+body.light .calculator{
+background:#f4f4f4;
+}
+
+body.light .display{
+color:#000;
+}
+
+body.light .dark{
+background:#d4d4d4;
+color:black;
+}
+
+body.light .scientific{
+background:#cfcfcf;
+color:#000;
+}
+
+body.light .theme-btn{
+background:#ddd;
+color:black;
+}
+
+@media(max-width:500px){
+button{
+height:65px;
+font-size:22px;
+}
+
+.display{
+font-size:45px;
+}
 }
 </style>
-
 </head>
-
 <body>
 
 <div class="calculator">
 
-<button onclick="toggleScientific()" id="modeBtn">Scientific Mode</button>
+<div class="top-bar">
+<h2>Calculator</h2>
+<button class="theme-btn" onclick="toggleTheme()">🌙 Mode</button>
+</div>
 
-<input type="text" id="display" readonly>
+<input type="text" class="display" id="display" readonly>
 
 <div class="buttons">
 
-<!-- MEMORY -->
-<button onclick="memoryClear()">MC</button>
-<button onclick="memoryRecall()">MR</button>
-<button onclick="memoryAdd()">M+</button>
-<button onclick="memorySubtract()">M-</button>
+<button class="scientific" onclick="append('Math.sin(')">sin</button>
+<button class="scientific" onclick="append('Math.cos(')">cos</button>
+<button class="scientific" onclick="append('Math.tan(')">tan</button>
+<button class="scientific" onclick="append('Math.sqrt(')">√</button>
+<button class="gray" onclick="clearDisplay()">AC</button>
 
-<!-- BASIC -->
-<button onclick="clearDisplay()" class="clear">C</button>
-<button onclick="deleteLast()">⌫</button>
-<button onclick="appendValue('/')">÷</button>
-<button onclick="appendValue('*')">×</button>
+<button class="scientific" onclick="append('Math.log10(')">log</button>
+<button class="scientific" onclick="append('Math.PI')">π</button>
+<button class="scientific" onclick="append('(')">(</button>
+<button class="scientific" onclick="append(')')">)</button>
+<button class="orange" onclick="append('/')">÷</button>
 
-<button onclick="appendValue('7')">7</button>
-<button onclick="appendValue('8')">8</button>
-<button onclick="appendValue('9')">9</button>
-<button onclick="appendValue('-')">−</button>
+<button class="dark" onclick="append('7')">7</button>
+<button class="dark" onclick="append('8')">8</button>
+<button class="dark" onclick="append('9')">9</button>
+<button class="scientific" onclick="backspace()">⌫</button>
+<button class="orange" onclick="append('*')">×</button>
 
-<button onclick="appendValue('4')">4</button>
-<button onclick="appendValue('5')">5</button>
-<button onclick="appendValue('6')">6</button>
-<button onclick="appendValue('+')">+</button>
+<button class="dark" onclick="append('4')">4</button>
+<button class="dark" onclick="append('5')">5</button>
+<button class="dark" onclick="append('6')">6</button>
+<button class="scientific" onclick="append('**')">xʸ</button>
+<button class="orange" onclick="append('-')">−</button>
 
-<button onclick="appendValue('1')">1</button>
-<button onclick="appendValue('2')">2</button>
-<button onclick="appendValue('3')">3</button>
-<button onclick="appendValue('.')">.</button>
+<button class="dark" onclick="append('1')">1</button>
+<button class="dark" onclick="append('2')">2</button>
+<button class="dark" onclick="append('3')">3</button>
+<button class="scientific" onclick="append('%')">%</button>
+<button class="orange" onclick="append('+')">+</button>
 
-<button onclick="squareRoot()">√</button>
-<button onclick="appendValue('%')">%</button>
-<button onclick="calculate()" class="equal">=</button>
-<button onclick="appendValue('0')">0</button>
-
-<!-- SCIENTIFIC PANEL -->
-<div id="sciPanel" class="sci-panel">
-
-<button onclick="sin()">sin</button>
-<button onclick="cos()">cos</button>
-<button onclick="tan()">tan</button>
-<button onclick="log()">log</button>
-<button onclick="pi()">π</button>
-<button onclick="power()">x²</button>
-
-</div>
+<button class="dark zero" onclick="append('0')">0</button>
+<button class="dark" onclick="append('.')">.</button>
+<button class="orange" onclick="calculate()">=</button>
 
 </div>
 </div>
 
-<!-- HISTORY -->
-<div class="history">
-
-<h3>History</h3>
-
-<button onclick="clearHistory()" class="clear-history">
-Clear History
-</button>
-
-<ul id="historyList"></ul>
-
-</div>
+<audio id="clickSound">
+<source src="https://www.soundjay.com/buttons/sounds/button-16.mp3" type="audio/mpeg">
+</audio>
 
 <script>
+const display = document.getElementById('display');
+const sound = document.getElementById('clickSound');
 
-let display = document.getElementById("display");
-let memory = 0;
-let scientificMode = false;
-let startY = 0;
-
-/* CLICK FX */
-function clickFX(){
-  if(navigator.vibrate){
-    navigator.vibrate(15);
-  }
-  playClickSound();
+function playSound(){
+sound.currentTime = 0;
+sound.play();
 }
 
-/* SOUND */
-function playClickSound(){
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  osc.type = "square";
-  osc.frequency.value = 800;
-
-  gain.gain.value = 0.05;
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  osc.start();
-  osc.stop(ctx.currentTime + 0.05);
-}
-
-/* BASIC */
-function appendValue(value){
-  clickFX();
-  if(display.value.length < 18){
-    display.value += value;
-  }
+function append(value){
+playSound();
+display.value += value;
 }
 
 function clearDisplay(){
-  clickFX();
-  display.value = "";
+playSound();
+display.value = '';
 }
 
-function deleteLast(){
-  clickFX();
-  display.value = display.value.slice(0,-1);
+function backspace(){
+playSound();
+display.value = display.value.slice(0,-1);
 }
 
-function squareRoot(){
-  clickFX();
-  if(display.value !== ""){
-    display.value = Math.sqrt(parseFloat(display.value));
-  }
-}
-
-/* CALCULATE */
 function calculate(){
-  clickFX();
-  try{
-    let result = eval(display.value);
-
-    let item = document.createElement("li");
-    item.textContent = display.value + " = " + result;
-    document.getElementById("historyList").appendChild(item);
-
-    display.value = result;
-  }
-  catch{
-    display.value = "Error";
-  }
+playSound();
+try{
+display.value = eval(display.value);
+}catch{
+display.value = 'Error';
+}
 }
 
-/* HISTORY */
-function clearHistory(){
-  document.getElementById("historyList").innerHTML = "";
-}
-
-/* THEME */
 function toggleTheme(){
-  document.body.classList.toggle("light-mode");
+playSound();
+document.body.classList.toggle('light');
 }
 
-/* MEMORY */
-function memoryClear(){ memory = 0; }
-function memoryRecall(){ display.value += memory; }
-function memoryAdd(){ if(display.value) memory += parseFloat(display.value); }
-function memorySubtract(){ if(display.value) memory -= parseFloat(display.value); }
+// Keyboard support
 
-/* SCIENTIFIC */
-function toggleScientific(){
-  scientificMode = !scientificMode;
+document.addEventListener('keydown', function(event){
+const key = event.key;
 
-  document.querySelector(".calculator")
-  .classList.toggle("scientific");
-
-  document.getElementById("modeBtn").textContent =
-    scientificMode ? "Basic Mode" : "Scientific Mode";
+if(!isNaN(key) || ['+','-','*','/','.','%','(',')'].includes(key)){
+append(key);
 }
 
-function sin(){ display.value = Math.sin(display.value); }
-function cos(){ display.value = Math.cos(display.value); }
-function tan(){ display.value = Math.tan(display.value); }
-function log(){ display.value = Math.log10(display.value); }
-function pi(){ display.value += Math.PI; }
-function power(){ display.value = Math.pow(display.value,2); }
+if(key === 'Enter'){
+calculate();
+}
 
-/* SWIPE */
-document.addEventListener("touchstart", e=>{
-  startY = e.touches[0].clientY;
+if(key === 'Backspace'){
+backspace();
+}
+
+if(key.toLowerCase() === 'c'){
+clearDisplay();
+}
 });
-
-document.addEventListener("touchend", e=>{
-  let endY = e.changedTouches[0].clientY;
-
-  if(startY - endY > 50){
-    document.querySelector(".calculator").classList.add("scientific");
-    scientificMode = true;
-    document.getElementById("modeBtn").textContent = "Basic Mode";
-  }
-
-  if(endY - startY > 50){
-    document.querySelector(".calculator").classList.remove("scientific");
-    scientificMode = false;
-    document.getElementById("modeBtn").textContent = "Scientific Mode";
-  }
-});
-
-/* KEYBOARD */
-document.addEventListener("keydown", e=>{
-  if(!isNaN(e.key) || "+-*/.%".includes(e.key)){
-    appendValue(e.key);
-  }
-
-  if(e.key === "Enter") calculate();
-  if(e.key === "Backspace") deleteLast();
-});
-
 </script>
 
 </body>
