@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>notes.ai</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #ccc; font-family: 'Courier New', monospace; min-height: 100vh; display: flex; flex-direction: column; }
+  :root { --acid: #BEFF2E; --card: #111a0a; --border: #2a3a0a; }
+  #header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .logo { font-size: 22px; font-weight: 900; color: #fff; }
+  .logo span { color: var(--acid); }
+  #back-btn, #settings-btn { background: none; border: 1px solid var(--border); color: #aaa; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; font-family: inherit; }
+  #back-btn { display: none; }
+  #app { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .error-bar { background: #1a0a0a; border: 1px solid #5a1a1a; border-radius: 10px; padding: 10px 14px; color: #ff6666; font-size: 13px; display: none; }
+  #key-screen { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+  #key-screen h2 { color: var(--acid); font-size: 20px; }
+  #key-screen p { color: #888; font-size: 14px; line-height: 1.6; }
+  #key-screen a { color: var(--acid); }
+  #key-input { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 14px; color: #ccc; font-size: 14px; font-family: inherit; outline: none; width: 100%; }
+  #save-key-btn { background: var(--acid); color: #000; border: none; border-radius: 22px; padding: 14px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+  #search-row { display: flex; gap: 10px; align-items: center; }
+  #search-input { flex: 1; background: #1a1a1a; border: 1px solid var(--border); border-radius: 24px; padding: 12px 18px; color: #ccc; font-size: 15px; font-family: inherit; outline: none; }
+  #new-note-btn { width: 50px; height: 50px; border-radius: 14px; background: var(--acid); border: none; font-size: 26px; color: #000; cursor: pointer; font-weight: 900; flex-shrink: 0; }
+  .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .note-title { color: #fff; font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .note-snippet { color: #666; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-date { color: #444; font-size: 11px; margin-top: 4px; }
+  .note-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .chip-btn { background: none; border: 1px solid var(--border); color: #666; border-radius: 20px; padding: 4px 12px; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .chip-btn.green { border-color: var(--acid); color: var(--acid); }
+  .chip-btn.blue { border-color: #6af; color: #6af; }
+  .chip-btn.red { border-color: #a44; color: #a44; }
+  #edit-view { display: none; flex-direction: column; gap: 12px; flex: 1; }
+  #note-title-input { background: none; border: none; border-bottom: 1px solid var(--border); color: #fff; font-size: 20px; font-weight: 700; padding: 8px 0; outline: none; font-family: inherit; width: 100%; }
+  #note-body-input { background: #111; border: 1px solid var(--border); border-radius: 12px; color: #ccc; font-size: 15px; padding: 16px; outline: none; resize: none; font-family: inherit; line-height: 1.6; min-height: 300px; flex: 1; }
+  .edit-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  #summarize-btn { background: var(--acid); color: #000; border: none; border-radius: 22px; padding: 10px 20px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+  #summarize-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  #chat-view { display: none; flex-direction: column; gap: 10px; flex: 1; }
+  #chat-note-ref { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--acid); font-size: 13px; font-weight: 700; }
+  #chat-messages { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 55vh; padding-bottom: 8px; }
+  .bubble { border-radius: 14px; padding: 10px 14px; max-width: 85%; font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .bubble.user { align-self: flex-end; background: #1e2e0a; border: 1px solid #2e4a0a; color: #d4f060; }
+  .bubble.ai { align-self: flex-start; background: #1a1a1a; border: 1px solid var(--border); color: #ccc; }
+  #chat-input-row { display: flex; gap: 8px; margin-top: 4px; }
+  #chat-input { flex: 1; background: #1a1a1a; border: 1px solid var(--border); border-radius: 22px; padding: 12px 16px; color: #ccc; font-size: 14px; font-family: inherit; outline: none; }
+  #send-btn { background: var(--acid); color: #000; border: none; border-radius: 22px; padding: 10px 18px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px; }
+  #send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  #empty-msg { color: #444; text-align: center; margin-top: 60px; font-size: 15px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="logo">notes<span>.ai</span></div>
+  <div>
+    <button id="back-btn" onclick="goBack()">← Back</button>
+    <button id="settings-btn" onclick="showKeyScreen()">⚙ API Key</button>
+  </div>
+</div>
+<div id="app">
+  <div class="error-bar" id="error-bar"></div>
+  <div id="key-screen">
+    <h2>🔑 Connect Claude AI</h2>
+    <p>Paste your Anthropic API key to unlock AI features.<br>
+    Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." />
+    <button id="save-key-btn" onclick="saveKey()">Save API Key</button>
+  </div>
+  <div id="list-view" style="display:none; flex-direction:column; gap:12px;">
+    <div id="search-row">
+      <input id="search-input" placeholder="🔍  Search notes..." oninput="renderNotes()" />
+      <button id="new-note-btn" onclick="newNote()">+</button>
+    </div>
+    <div id="notes-container"></div>
+  </div>
+  <div id="edit-view">
+    <input id="note-title-input" placeholder="Note title..." oninput="onTitleChange()" />
+    <textarea id="note-body-input" placeholder="Start writing..." oninput="onBodyChange()"></textarea>
+    <div class="edit-actions">
+      <button id="summarize-btn" onclick="aiSummarize()">✦ AI Summarize</button>
+      <button class="chip-btn blue" onclick="openChat()">✦ Chat</button>
+      <button class="chip-btn red" onclick="deleteActiveNote()">Delete</button>
+    </div>
+  </div>
+  <div id="chat-view">
+    <div id="chat-note-ref"></div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-row">
+      <input id="chat-input" placeholder="Ask anything about this note..." onkeydown="if(event.key==='Enter') sendChat()" />
+      <button id="send-btn" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+</div>
+<script>
+  // ⚠️ Replace this with your Render URL after deploying
+  const PROXY_URL = 'https://notesai-proxy-production.up.railway.app/api/chat';
+
+  let notes = JSON.parse(localStorage.getItem('notesai_notes') || '[]');
+  let activeNote = null, chatHistory = [], loading = false;
+
+  function getKey() { return localStorage.getItem('notesai_key') || ''; }
+
+  function saveKey() {
+    const k = document.getElementById('key-input').value.trim();
+    if (!k) { showError('Please enter a valid API key.'); return; }
+    localStorage.setItem('notesai_key', k);
+    showList();
+  }
+
+  function showKeyScreen() {
+    document.getElementById('key-input').value = getKey();
+    hide('list-view'); hide('edit-view'); hide('chat-view'); show('key-screen');
+    document.getElementById('back-btn').style.display = getKey() ? 'inline-block' : 'none';
+    document.getElementById('settings-btn').style.display = 'none';
+  }
+  function showList() {
+    hide('key-screen'); hide('edit-view'); hide('chat-view'); show('list-view');
+    document.getElementById('back-btn').style.display = 'none';
+    document.getElementById('settings-btn').style.display = 'inline-block';
+    renderNotes();
+  }
+  function showEdit() {
+    hide('key-screen'); hide('list-view'); hide('chat-view');
+    document.getElementById('edit-view').style.display = 'flex';
+    document.getElementById('back-btn').style.display = 'inline-block';
+    document.getElementById('settings-btn').style.display = 'inline-block';
+    document.getElementById('note-title-input').value = activeNote.title;
+    document.getElementById('note-body-input').value = activeNote.body;
+  }
+  function showChatView() {
+    hide('key-screen'); hide('list-view'); hide('edit-view');
+    document.getElementById('chat-view').style.display = 'flex';
+    document.getElementById('back-btn').style.display = 'inline-block';
+    document.getElementById('settings-btn').style.display = 'inline-block';
+  }
+  function goBack() {
+    if (document.getElementById('chat-view').style.display === 'flex') { showEdit(); return; }
+    showList();
+  }
+  function hide(id) { document.getElementById(id).style.display = 'none'; }
+  function show(id) { document.getElementById(id).style.display = 'flex'; }
+  function showError(msg) {
+    const bar = document.getElementById('error-bar');
+    bar.textContent = '⚠️ ' + msg; bar.style.display = 'block';
+    setTimeout(() => bar.style.display = 'none', 6000);
+  }
+  function saveNotes() { localStorage.setItem('notesai_notes', JSON.stringify(notes)); }
+  function formatDate(ts) { return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+  function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function renderNotes() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const filtered = notes.filter(n => n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q));
+    const container = document.getElementById('notes-container');
+    if (filtered.length === 0) {
+      container.innerHTML = `<div id="empty-msg">${notes.length === 0 ? 'No notes yet.\nTap + to create one.' : 'No notes match your search.'}</div>`;
+      return;
+    }
+    container.innerHTML = filtered.map(n => `
+      <div class="note-card">
+        <div class="note-title" onclick="openNote('${n.id}')">${escHtml(n.title || 'Untitled')}</div>
+        <div class="note-snippet">${escHtml(n.body.slice(0, 80)) || 'Empty note'}</div>
+        <div class="note-date">${formatDate(n.ts)}</div>
+        <div class="note-actions">
+          <button class="chip-btn green" onclick="openNote('${n.id}')">Edit</button>
+          <button class="chip-btn blue" onclick="openNoteChat('${n.id}')">✦ Ask AI</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function newNote() {
+    const note = { id: Date.now().toString(), title: 'Untitled', body: '', ts: Date.now() };
+    notes.unshift(note); saveNotes(); activeNote = note; showEdit();
+  }
+  function openNote(id) { activeNote = notes.find(n => n.id === id); showEdit(); }
+  function onTitleChange() { if (!activeNote) return; activeNote.title = document.getElementById('note-title-input').value; activeNote.ts = Date.now(); saveNotes(); }
+  function onBodyChange() { if (!activeNote) return; activeNote.body = document.getElementById('note-body-input').value; activeNote.ts = Date.now(); saveNotes(); }
+  function deleteActiveNote() { notes = notes.filter(n => n.id !== activeNote.id); saveNotes(); activeNote = null; showList(); }
+  function openChat() { if (activeNote) startChat(activeNote); }
+  function openNoteChat(id) { activeNote = notes.find(n => n.id === id); startChat(activeNote); }
+
+  function startChat(note) {
+    chatHistory = [];
+    document.getElementById('chat-note-ref').textContent = '📄 ' + (note.title || 'Untitled');
+    document.getElementById('chat-messages').innerHTML = '';
+    addBubble('ai', `Ready to help with "${note.title}". What would you like — summarize, expand, or ask questions?`);
+    showChatView();
+    document.getElementById('chat-input').focus();
+  }
+  function addBubble(role, text) {
+    const div = document.createElement('div');
+    div.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
+    div.textContent = text;
+    document.getElementById('chat-messages').appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth' });
+    return div;
+  }
+  function setLoadingBubble(on) {
+    const existing = document.getElementById('loading-bubble');
+    if (on && !existing) { const d = addBubble('ai', '✦ Thinking...'); d.id = 'loading-bubble'; }
+    else if (!on && existing) { existing.remove(); }
+  }
+
+  async function callClaude(messages) {
+    const key = getKey();
+    if (!key) throw new Error('No API key saved. Tap ⚙ API Key to add one.');
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system: 'You are a smart notes assistant. Help users summarize, expand, and analyze their notes. Be concise.',
+        messages,
+      }),
+    });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err?.error?.message || `HTTP ${res.status}`); }
+    const data = await res.json();
+    return data.content?.map(b => b.text || '').join('') || 'No response.';
+  }
+
+  async function aiSummarize() {
+    if (loading) return;
+    if (!activeNote?.body?.trim()) { showError('Note is empty — nothing to summarize.'); return; }
+    loading = true;
+    const btn = document.getElementById('summarize-btn');
+    btn.disabled = true; btn.textContent = '⏳ Thinking...';
+    try {
+      const reply = await callClaude([{ role: 'user', content: `Summarize this note in 2-3 sentences:\n\n${activeNote.body}` }]);
+      activeNote.body += '\n\n---\n✦ AI Summary:\n' + reply;
+      activeNote.ts = Date.now(); saveNotes();
+      document.getElementById('note-body-input').value = activeNote.body;
+    } catch(e) { showError(e.message); }
+    finally { loading = false; btn.disabled = false; btn.textContent = '✦ AI Summarize'; }
+  }
+
+  async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg || loading) return;
+    input.value = ''; loading = true;
+    document.getElementById('send-btn').disabled = true; input.disabled = true;
+    chatHistory.push({ role: 'user', content: msg });
+    addBubble('user', msg); setLoadingBubble(true);
+    try {
+      const noteContext = activeNote ? `Context — note titled "${activeNote.title}":\n${activeNote.body}\n\n---\n` : '';
+      const apiMessages = chatHistory.map((m, i) =>
+        (m.role === 'user' && i === 0) ? { role: 'user', content: noteContext + m.content } : m
+      );
+      const reply = await callClaude(apiMessages);
+      chatHistory.push({ role: 'assistant', content: reply });
+      setLoadingBubble(false); addBubble('ai', reply);
+    } catch(e) {
+      setLoadingBubble(false); showError(e.message); addBubble('ai', '⚠️ ' + e.message);
+    } finally {
+      loading = false; document.getElementById('send-btn').disabled = false;
+      input.disabled = false; input.focus();
+    }
+  }
+
+  if (getKey()) { showList(); } else { showKeyScreen(); }
+</script>
+</body>
+  </html>
+  
