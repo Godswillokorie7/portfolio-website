@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -63,10 +63,10 @@
 <div id="app">
   <div class="error-bar" id="error-bar"></div>
   <div id="key-screen">
-    <h2>🔑 Connect Claude AI</h2>
-    <p>Paste your Anthropic API key to unlock AI features.<br>
-    Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." />
+    <h2>🔑 Connect Gemini AI</h2>
+    <p>Paste your Google Gemini API key to unlock AI features.<br>
+    Get one free at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key</p>
+    <input type="password" id="key-input" placeholder="AIza..." />
     <button id="save-key-btn" onclick="saveKey()">Save API Key</button>
   </div>
   <div id="list-view" style="display:none; flex-direction:column; gap:12px;">
@@ -95,9 +95,6 @@
   </div>
 </div>
 <script>
-  // ⚠️ Replace this with your Render URL after deploying
-  const PROXY_URL = 'https://notesai-proxy-production.up.railway.app/api/chat';
-
   let notes = JSON.parse(localStorage.getItem('notesai_notes') || '[]');
   let activeNote = null, chatHistory = [], loading = false;
 
@@ -204,22 +201,22 @@
     else if (!on && existing) { existing.remove(); }
   }
 
-  async function callClaude(messages) {
+  async function callGemini(prompt) {
     const key = getKey();
     if (!key) throw new Error('No API key saved. Tap ⚙ API Key to add one.');
-    const res = await fetch(PROXY_URL, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        system: 'You are a smart notes assistant. Help users summarize, expand, and analyze their notes. Be concise.',
-        messages,
+        contents: [{ parts: [{ text: prompt }] }]
       }),
     });
-    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err?.error?.message || `HTTP ${res.status}`); }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
     const data = await res.json();
-    return data.content?.map(b => b.text || '').join('') || 'No response.';
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
   }
 
   async function aiSummarize() {
@@ -229,7 +226,7 @@
     const btn = document.getElementById('summarize-btn');
     btn.disabled = true; btn.textContent = '⏳ Thinking...';
     try {
-      const reply = await callClaude([{ role: 'user', content: `Summarize this note in 2-3 sentences:\n\n${activeNote.body}` }]);
+      const reply = await callGemini(`You are a smart notes assistant. Summarize this note in 2-3 sentences:\n\n${activeNote.body}`);
       activeNote.body += '\n\n---\n✦ AI Summary:\n' + reply;
       activeNote.ts = Date.now(); saveNotes();
       document.getElementById('note-body-input').value = activeNote.body;
@@ -247,10 +244,8 @@
     addBubble('user', msg); setLoadingBubble(true);
     try {
       const noteContext = activeNote ? `Context — note titled "${activeNote.title}":\n${activeNote.body}\n\n---\n` : '';
-      const apiMessages = chatHistory.map((m, i) =>
-        (m.role === 'user' && i === 0) ? { role: 'user', content: noteContext + m.content } : m
-      );
-      const reply = await callClaude(apiMessages);
+      const fullPrompt = `You are a smart notes assistant. Help the user with their note.\n\n${noteContext}User: ${msg}`;
+      const reply = await callGemini(fullPrompt);
       chatHistory.push({ role: 'assistant', content: reply });
       setLoadingBubble(false); addBubble('ai', reply);
     } catch(e) {
@@ -264,5 +259,5 @@
   if (getKey()) { showList(); } else { showKeyScreen(); }
 </script>
 </body>
-  </html>
-  
+ </html>
+ 
